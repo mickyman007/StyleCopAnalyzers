@@ -6,6 +6,7 @@
 namespace StyleCop.Analyzers.Helpers
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Immutable;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
@@ -34,6 +35,28 @@ namespace StyleCop.Analyzers.Helpers
             SyntaxKind.ConstructorDeclaration,
             SyntaxKind.FieldDeclaration,
             SyntaxKind.NamespaceDeclaration);
+
+        private static readonly Dictionary<MemberOrderingTrait, SyntaxKind> DefaultMemberOrderDictionary =
+            new()
+            {
+                { MemberOrderingTrait.Fields, SyntaxKind.FieldDeclaration },
+                { MemberOrderingTrait.Constructors, SyntaxKind.ConstructorDeclaration },
+                { MemberOrderingTrait.Finalizers, SyntaxKind.DestructorDeclaration },
+                { MemberOrderingTrait.Delegates, SyntaxKind.DelegateDeclaration },
+                { MemberOrderingTrait.Events, SyntaxKind.EventDeclaration },
+                { MemberOrderingTrait.Enums, SyntaxKind.EnumDeclaration },
+                { MemberOrderingTrait.Interfaces, SyntaxKind.InterfaceDeclaration },
+                { MemberOrderingTrait.Properties, SyntaxKind.PropertyDeclaration },
+                { MemberOrderingTrait.Indexers, SyntaxKind.IndexerDeclaration },
+                { MemberOrderingTrait.Methods, SyntaxKind.MethodDeclaration },
+                { MemberOrderingTrait.Structs, SyntaxKind.StructDeclaration },
+                { MemberOrderingTrait.Classes, SyntaxKind.ClassDeclaration },
+            };
+
+        internal static SyntaxKind GetSyntaxKind(MemberOrderingTrait memberOrderingTrait)
+        {
+            return DefaultMemberOrderDictionary[memberOrderingTrait];
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberOrderHelper"/> struct.

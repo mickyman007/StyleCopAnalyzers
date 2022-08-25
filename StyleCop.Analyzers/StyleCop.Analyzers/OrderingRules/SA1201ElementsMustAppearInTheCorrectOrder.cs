@@ -133,22 +133,6 @@ namespace StyleCop.Analyzers.OrderingRules
             SyntaxKind.StructDeclaration,
             SyntaxKind.ClassDeclaration);
 
-        private static readonly ImmutableArray<SyntaxKind> TypeMemberOrder = ImmutableArray.Create(
-            SyntaxKind.FieldDeclaration,
-            SyntaxKind.ConstructorDeclaration,
-            SyntaxKind.DestructorDeclaration,
-            SyntaxKind.DelegateDeclaration,
-            SyntaxKind.EventDeclaration,
-            SyntaxKind.EnumDeclaration,
-            SyntaxKind.InterfaceDeclaration,
-            SyntaxKind.PropertyDeclaration,
-            SyntaxKind.IndexerDeclaration,
-            SyntaxKind.ConversionOperatorDeclaration,
-            SyntaxKind.OperatorDeclaration,
-            SyntaxKind.MethodDeclaration,
-            SyntaxKind.StructDeclaration,
-            SyntaxKind.ClassDeclaration);
-
         private static readonly Dictionary<SyntaxKind, string> MemberNames = new Dictionary<SyntaxKind, string>
         {
             [SyntaxKind.NamespaceDeclaration] = "namespace",
@@ -200,9 +184,11 @@ namespace StyleCop.Analyzers.OrderingRules
                 return;
             }
 
+            var typeMemberOrder = settings.OrderingRules.MemberOrder;
+
             var typeDeclaration = (TypeDeclarationSyntax)context.Node;
 
-            HandleMemberList(context, elementOrder, kindIndex, typeDeclaration.Members, TypeMemberOrder);
+            HandleMemberList(context, elementOrder, kindIndex, typeDeclaration.Members, typeMemberOrder);
         }
 
         private static void HandleCompilationUnit(SyntaxNodeAnalysisContext context, StyleCopSettings settings)

@@ -5,8 +5,11 @@
 
 namespace StyleCop.Analyzers.Settings.ObjectModel
 {
+    using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.Linq;
     using LightJson;
+    using Microsoft.CodeAnalysis.CSharp;
     using StyleCop.Analyzers.Helpers;
     using StyleCop.Analyzers.Lightup;
 
@@ -20,10 +23,31 @@ namespace StyleCop.Analyzers.Settings.ObjectModel
                 OrderingTrait.Static,
                 OrderingTrait.Readonly);
 
+        private static readonly ImmutableArray<MemberOrderingTrait> DefaultMemberOrder =
+            ImmutableArray.Create(
+                MemberOrderingTrait.Fields,
+                MemberOrderingTrait.Properties,
+                MemberOrderingTrait.Events,
+                MemberOrderingTrait.Delegates,
+                MemberOrderingTrait.Enums,
+                MemberOrderingTrait.Constructors,
+                MemberOrderingTrait.Finalizers,
+                MemberOrderingTrait.Interfaces,
+                MemberOrderingTrait.Indexers,
+                MemberOrderingTrait.Methods,
+                MemberOrderingTrait.Structs,
+                MemberOrderingTrait.Classes
+                );
+
         /// <summary>
         /// This is the backing field for the <see cref="ElementOrder"/> property.
         /// </summary>
         private readonly ImmutableArray<OrderingTrait> elementOrder;
+
+        /// <summary>
+        /// This is the backing field for the <see cref="MemberOrder"/> property.
+        /// </summary>
+        private readonly ImmutableArray<MemberOrderingTrait> memberOrder;
 
         /// <summary>
         /// This is the backing field for the <see cref="SystemUsingDirectivesFirst"/> property.
@@ -46,6 +70,7 @@ namespace StyleCop.Analyzers.Settings.ObjectModel
         protected internal OrderingSettings()
         {
             this.elementOrder = ImmutableArray<OrderingTrait>.Empty;
+            this.memberOrder = ImmutableArray<MemberOrderingTrait>.Empty;
             this.systemUsingDirectivesFirst = true;
             this.usingDirectivesPlacement = UsingDirectivesPlacement.InsideNamespace;
             this.blankLinesBetweenUsingGroups = OptionSetting.Allow;
@@ -60,6 +85,7 @@ namespace StyleCop.Analyzers.Settings.ObjectModel
         protected internal OrderingSettings(JsonObject orderingSettingsObject, AnalyzerConfigOptionsWrapper analyzerConfigOptions)
         {
             ImmutableArray<OrderingTrait>.Builder elementOrder = null;
+            ImmutableArray<MemberOrderingTrait>.Builder memberOrder = null;
             bool? systemUsingDirectivesFirst = null;
             UsingDirectivesPlacement? usingDirectivesPlacement = null;
             OptionSetting? blankLinesBetweenUsingGroups = null;
@@ -74,6 +100,16 @@ namespace StyleCop.Analyzers.Settings.ObjectModel
                     foreach (var value in kvp.Value.AsJsonArray)
                     {
                         elementOrder.Add(value.ToEnumValue<OrderingTrait>(kvp.Key));
+                    }
+
+                    break;
+
+                case "memberOrder":
+                    kvp.AssertIsArray();
+                    memberOrder = ImmutableArray.CreateBuilder<MemberOrderingTrait>();
+                    foreach (var value in kvp.Value.AsJsonArray)
+                    {
+                        memberOrder.Add(value.ToEnumValue<MemberOrderingTrait>(kvp.Key));
                     }
 
                     break;
@@ -110,17 +146,37 @@ namespace StyleCop.Analyzers.Settings.ObjectModel
             };
 
             this.elementOrder = elementOrder?.ToImmutable() ?? ImmutableArray<OrderingTrait>.Empty;
+            this.memberOrder = memberOrder?.ToImmutable() ?? ImmutableArray<MemberOrderingTrait>.Empty;
             this.systemUsingDirectivesFirst = systemUsingDirectivesFirst.GetValueOrDefault(true);
             this.usingDirectivesPlacement = usingDirectivesPlacement.GetValueOrDefault(UsingDirectivesPlacement.InsideNamespace);
             this.blankLinesBetweenUsingGroups = blankLinesBetweenUsingGroups.GetValueOrDefault(OptionSetting.Allow);
         }
 
+        /// <summary>
+        /// This isn't element order but access order instead.
+        /// </summary>
         public ImmutableArray<OrderingTrait> ElementOrder
         {
             get
             {
                 return this.elementOrder.Length > 0 ? this.elementOrder : DefaultElementOrder;
             }
+        }
+
+        /// <summary>
+        /// This is our real element order, but we'll call it member order for now.
+        /// </summary>
+        public ImmutableArray<SyntaxKind> MemberOrder
+        {
+            get
+            {
+                return this.memberOrder.Length > 0 ? MemberOrderToSyntaxKind(this.memberOrder) : MemberOrderToSyntaxKind(DefaultMemberOrder);
+            }
+        }
+
+        private static ImmutableArray<SyntaxKind> MemberOrderToSyntaxKind(IEnumerable<MemberOrderingTrait> memberOrderingTraits)
+        {
+            return memberOrderingTraits.Select(MemberOrderHelper.GetSyntaxKind).ToImmutableArray();
         }
 
         public bool SystemUsingDirectivesFirst =>
