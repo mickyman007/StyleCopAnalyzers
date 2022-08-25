@@ -81,6 +81,43 @@
               },
               "uniqueItems": true
             },
+            "memberOrder":{
+              "type": "array",
+              "description": "Specifies the traits used for ordering elements within a document, along with their precedence.",
+              "default": [
+                "fields",
+                "constructors",
+                "finalizers",
+                "delegates",
+                "events",
+                "enums",
+                "interfaces",
+                "properties",
+                "indexers",
+                "methods",
+                "structs",
+                "classes"
+              ],
+              "items": {
+                "type": "string",
+                "description": "",
+                "enum": [
+                  "fields",
+                  "constructors",
+                  "finalizers",
+                  "delegates",
+                  "events",
+                  "enums",
+                  "interfaces",
+                  "properties",
+                  "indexers",
+                  "methods",
+                  "structs",
+                  "classes"
+                ]
+              },
+              "uniqueItems": true
+            },
             "systemUsingDirectivesFirst": {
               "type": "boolean",
               "description": "When true, System using directives should be placed before other using directives.",
